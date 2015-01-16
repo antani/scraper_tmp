@@ -20,31 +20,15 @@ def flipkart_book_parser(search_term):
     if 'flipkart_test_{0}'.format(search_term) in mc:
         page=mc['flipkart_test_{0}'.format(search_term)]
     else:
-        page=requests.get('http://www.flipkart.com/search?q={0}'.format(search_term))
+        page=get_page('http://www.flipkart.com/search?q={0}'.format(search_term))
         mc['flipkart_test_{0}'.format(search_term)] =page
 
-    tree = html.fromstring(page.text)
+    d = pq(page)
+    print d('div.pu-final').text()
+    print d('a.lu-title').text()
+    print d('div.lu-title-wrapper span.fk-font-11').text()
+    print d('div.pu-discount').text()
 
-    for el in tree.cssselect('div.pu-final'):
-        print el.text
-
-    priceselector = CSSSelector('a.lu-title')
-    results = priceselector(tree)
-
-    for result in results:
-        print result.text
-
-    authorselector = CSSSelector('div.lu-title-wrapper span.fk-font-11')
-    results = authorselector(tree)
-
-    for result in results:
-        print result.text.strip()[3:]
-
-    discountselector = CSSSelector('div.pu-discount')
-    results = discountselector(tree)
-
-    for result in results:
-        print result.text
 
 def flipkart_mobile_parser(search_term):
 
@@ -62,5 +46,5 @@ def flipkart_mobile_parser(search_term):
 
 
 if __name__ == '__main__':
-    #flipkart_book_parser('algorithms')
-    flipkart_mobile_parser('lenovo vibe')
+    flipkart_book_parser('algorithms')
+    #flipkart_mobile_parser('lenovo vibe')
