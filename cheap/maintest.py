@@ -30,6 +30,7 @@ def flipkart_book_parser(search_term):
     print d('div.pu-discount').text()
 
 
+
 def flipkart_mobile_parser(search_term):
 
     if 'flipkart_test_{0}'.format(search_term) in mc:
