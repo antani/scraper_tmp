@@ -1,7 +1,7 @@
 lxml
 cssselect
-etree
 requests
 pylibmc
 pyquery
 grequests
+profilehooks
