@@ -35,9 +35,9 @@ class AmazonParser:
         return val
 
 
-    def amazon_book_parser(self,search_term):
+    def amazon_parser(self,search_term):
         d = pq(self.get_page(search_term,"book"))
-        price_d = d('span.a-size-base.a-color-price.s-price.a-text-bold').map(lambda i, e: pq(e).text())
+        price_d = d('div.a-row.a-spacing-none:nth-child(2) a.a-link-normal.a-text-normal span.a-size-base.a-color-price.s-price.a-text-bold').map(lambda i, e: pq(e).text())
         for p in price_d:
             logger.debug(p)
 
