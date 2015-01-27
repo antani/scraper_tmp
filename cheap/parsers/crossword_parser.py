@@ -48,7 +48,7 @@ class CrosswordParser:
         self.mc = memcache.Client(['localhost:11211'], debug=1)
 
     def get_page(self,search_term,search_type="Rest"):
-        val=self.mc.get(getkey("%s%s%s" % ("ebay",search_term,search_type)))
+        val=self.mc.get(getkey("%s%s%s" % ("crossword",search_term,search_type)))
         if val is None:
             # sanitized_url = BASE_URL.format(urllib.quote(search_term))
             # val = parse(sanitized_url).getroot()
@@ -56,14 +56,14 @@ class CrosswordParser:
             user_agent = {'User-agent': 'Mozilla/5.0'}
             response = requests.get(BASE_URL.format(urllib.quote(search_term)), headers=user_agent)
             val = html.fromstring(response.text)
-            self.mc.set(getkey("%s%s%s" % ("ebay",search_term,search_type)),tostring(val))
+            self.mc.set(getkey("%s%s%s" % ("crossword",search_term,search_type)),tostring(val))
         return val
 
 
     def crossword_parser(self,search_term):
         d = pq(self.get_page(search_term,"Rest"))
 
-        price_d = d('div#search-results ul#search-result-items.list-view.clearfix li.clearfix div.variant-desc span.price span.variant-final-price').map(lambda i, e: pq(e).text())
+        price_d = d('span.variant-final-price').remove('span').map(lambda i, e: pq(e).text())
         for p in price_d:
             logger.debug(p)
 
