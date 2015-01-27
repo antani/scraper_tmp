@@ -4,6 +4,7 @@ from parsers.snapdeal_parser import SnapdealParser
 from parsers.infibeam_parser import InfibeamParser
 from parsers.ebay_parser import EbayParser
 from parsers.crossword_parser import CrosswordParser
+from parsers.uread_parser import UreadParser
 import pprint
 
 if __name__ == '__main__':
@@ -30,7 +31,10 @@ if __name__ == '__main__':
     # t= EbayParser()
     # pprint.pprint(t.ebay_parser('Introduction to Algorithms'))
     # pprint.pprint(t.ebay_parser('XOLO Opus 3'))
-    t= CrosswordParser()
-    pprint.pprint(t.crossword_parser('Introduction to Algorithms'))
+    # t= CrosswordParser()
+    # pprint.pprint(t.crossword_parser('Introduction to Algorithms'))
+
+    t= UreadParser()
+    pprint.pprint(t.uread_parser('Introduction to Algorithms'))
 
 
