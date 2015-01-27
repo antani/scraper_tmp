@@ -71,7 +71,7 @@ class UreadParser:
         for p in name_d:
             logger.debug(p)
 
-        author_d = d('div#listSearchResult.product div.list-view-books div.product-summary div.author-publisher a').map(lambda i, e: pq(e).text())
+        author_d = d('div#listSearchResult.product div.list-view-books div.product-summary div.author-publisher a:first-child').map(lambda i, e: pq(e).text())
         for p in author_d:
             logger.debug(p)
 
@@ -89,12 +89,13 @@ class UreadParser:
 
         prices=[]
         for price,name,author,discount,img,url in map(None, price_d,name_d,author_d,discount_d,img_d, url_d):
-            prices.append({'source':'uread', 'price':price,
-                           'name':name,
-                           'author':author,
-                           'discount':discount,'img':img,
-                           'url':url
-                           })
+            if price:
+                prices.append({'source':'uread', 'price':price,
+                               'name':name,
+                               'author':author,
+                               'discount':discount,'img':img,
+                               'url':url
+                               })
 
         logger.debug( prices)
         return prices
