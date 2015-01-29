@@ -9,11 +9,13 @@ from hashlib import md5
 from lxml.html import parse,tostring
 from pyquery import PyQuery as pq
 from profilehooks import timecall
+from similarity import string_similarity
+
 import re
 
 mc = None
 BASE_URL="http://www.flipkart.com/search?q="
-logging.config.fileConfig('logging.conf')
+logging.config.fileConfig('../logging.conf')
 logger = logging.getLogger("root")
 
 
@@ -55,7 +57,7 @@ class FlipkartParser:
             self.mc.set(getkey("%s%s%s" % ("flipkart",search_term,search_type)),tostring(val))
         return val
 
-    @memorise()
+
     def flipkart_book_parser(self,search_term):
 
         d = pq(self.get_page(search_term,"book"))
@@ -85,15 +87,17 @@ class FlipkartParser:
 
         prices=[]
         for price, name, img, url, author, discount in map(None, price_d,name_d,img_d,url_d,author_d,discount_d ):
-            prices.append({'source':'flipkart', 'price':sanitize_price(price),'name':name,
-                           'img':img, 'url':url,'author':author,
-                           'discount':' '.join(discount.split())})
+            if price:
+                prices.append({'source':'flipkart', 'price':float(sanitize_price(price)),'name':name,
+                               'img':img, 'url':url,'author':author,
+                               'discount':' '.join(discount.split()) if discount else None,
+                               'weight':string_similarity(search_term,name) if name else None})
 
         logger.debug( prices)
         return prices
 
 
-    @memorise()
+
     def flipkart_rest_parser(self, search_term):
         d = pq(self.get_page(search_term))
         price_d = d('div.pu-final').map(lambda i, e: pq(e).text())
@@ -122,9 +126,10 @@ class FlipkartParser:
 
         prices=[]
         for price, name, img, url, usp, discount in map(None, price_d,name_d,img_d,url_d,usp_d,discount_d ):
-            prices.append({'source':'flipkart', 'price':sanitize_price(price),'name':name,
+            prices.append({'source':'flipkart', 'price':float(sanitize_price(price)),'name':name,
                            'img':img, 'url':url,'usp':usp,
-                           'discount':discount})
+                           'discount':discount,
+                           'weight':string_similarity(search_term,name) if name else None})
 
         logger.debug( prices)
         return prices

@@ -12,10 +12,11 @@ from profilehooks import timecall
 import urllib
 import requests
 from lxml import html
+from similarity import string_similarity
 
 mc = None
-BASE_URL="http://www.crossword.in/home/search?q={0}"
-logging.config.fileConfig('logging.conf')
+BASE_URL="http://www.infibeam.com/search?q={0}"
+logging.config.fileConfig('../logging.conf')
 logger = logging.getLogger("root")
 
 # Helper functions to clean up price values to a number
@@ -42,13 +43,13 @@ def getkey(str):
     logger.debug( key)
     return key
 
-class CrosswordParser:
+class InfibeamParser:
 
     def __init__(self):
         self.mc = memcache.Client(['localhost:11211'], debug=1)
 
     def get_page(self,search_term,search_type="Rest"):
-        val=self.mc.get(getkey("%s%s%s" % ("crossword",search_term,search_type)))
+        val=self.mc.get(getkey("%s%s%s" % ("infibeam",search_term,search_type)))
         if val is None:
             # sanitized_url = BASE_URL.format(urllib.quote(search_term))
             # val = parse(sanitized_url).getroot()
@@ -56,44 +57,44 @@ class CrosswordParser:
             user_agent = {'User-agent': 'Mozilla/5.0'}
             response = requests.get(BASE_URL.format(urllib.quote(search_term)), headers=user_agent)
             val = html.fromstring(response.text)
-            self.mc.set(getkey("%s%s%s" % ("crossword",search_term,search_type)),tostring(val))
+            self.mc.set(getkey("%s%s%s" % ("infibeam",search_term,search_type)),tostring(val))
         return val
 
 
-    def crossword_parser(self,search_term):
+    def parse(self,search_term):
         d = pq(self.get_page(search_term,"Rest"))
-
-        price_d = d('span.variant-final-price').remove('span').map(lambda i, e: pq(e).text())
+        price_d = d('div.price.row span.final-price').map(lambda i, e: pq(e).text())
         for p in price_d:
             logger.debug(p)
 
-        name_d = d('div.variant-desc span.variant-title').map(lambda i, e: pq(e).text())
+        name_d = d('div.title a').map(lambda i, e: pq(e).text())
         for p in name_d:
             logger.debug(p)
 
-        author_d = d('div.variant-desc span.contributors span.ctbr-name').map(lambda i, e: pq(e).text())
+        author_d = d('div.title div.author').map(lambda i, e: pq(e).text())
         for p in author_d:
             logger.debug(p)
 
-        discount_d = d('div.lvsubtitle').map(lambda i, e: pq(e).text())
+        discount_d = d('div.price.row span.discount').map(lambda i, e: pq(e).text())
         for p in discount_d:
             logger.debug(p)
 
-        img_d = d('div.variant-image a img').map(lambda i, e: pq(e).attr('src'))
+        img_d = d('div.thumbnail div.product-img.col-md-12.col-xs-4 a picture img.img-responsive').map(lambda i, e: pq(e).attr('src'))
         for p in img_d:
             logger.debug(p)
 
-        url_d = d('div.variant-desc span.variant-title a').map(lambda i, e: pq(e).attr('href'))
+        url_d = d('div.title a').map(lambda i, e: pq(e).attr('href'))
         for p in url_d:
             logger.debug(p)
 
         prices=[]
         for price,name,author,discount,img,url in map(None, price_d,name_d,author_d,discount_d,img_d, url_d):
-            prices.append({'source':'crossword', 'price':price,
+            prices.append({'source':'infibeam', 'price':float(sanitize_price(price)),
                            'name':name,
                            'author':author,
                            'discount':discount,'img':img,
-                           'url':url
+                           'url':url,
+                           'weight':string_similarity(search_term,name) if name else None
                            })
 
         logger.debug( prices)

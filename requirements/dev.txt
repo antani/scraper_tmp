@@ -7,3 +7,4 @@ grequests
 profilehooks
 python-memcached
 memorised
+Flask

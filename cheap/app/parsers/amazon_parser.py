@@ -9,11 +9,30 @@ from lxml.html import parse,tostring
 from pyquery import PyQuery as pq
 from profilehooks import timecall
 import re
+from similarity import string_similarity
 
 mc = None
 BASE_URL="http://www.amazon.in/s/field-keywords="
-logging.config.fileConfig('logging.conf')
+logging.config.fileConfig('../logging.conf')
 logger = logging.getLogger("root")
+
+# Helper functions to clean up price values to a number
+def sanitize_price(price_value):
+    # Remove all Rupee symbols and commas
+    cleaned_price = price_value.strip().replace(',','').replace(u'\u20b9','')
+    # Remove all characters except a .
+    non_decimal = re.compile(r'[^\d.]+')
+    price_digs = non_decimal.sub('', cleaned_price)
+    # After this there might be a leading . , remove it
+    if price_digs =='':
+        return 0
+
+    if price_digs[0] == '.':
+        price = price_digs[1:]
+    else:
+        price = price_digs
+    return price
+
 
 def getkey(str):
     key = str.encode('utf8')
@@ -35,7 +54,7 @@ class AmazonParser:
         return val
 
 
-    def amazon_parser(self,search_term):
+    def parse(self,search_term):
         d = pq(self.get_page(search_term,"book"))
         price_d = d('div.a-row.a-spacing-none:nth-child(2) a.a-link-normal.a-text-normal span.a-size-base.a-color-price.s-price.a-text-bold').map(lambda i, e: pq(e).text())
         for p in price_d:
@@ -62,13 +81,15 @@ class AmazonParser:
             logger.debug(p)
 
         prices=[]
+
         for price,name,author,discount,img,url in map(None, price_d,name_d,author_d,discount_d,img_d, url_d):
-            prices.append({'source':'amazon', 'price':price,
-                           'name':name,
-                           'author':author,
-                           'discount':discount,'img':img,
-                           'url':url
-                           })
+            if price:
+                prices.append({'source':'amazon', 'price':float(sanitize_price(price)),
+                               'name':name,
+                               'author':author,
+                               'discount':discount,'img':img,
+                               'url':url,'weight':string_similarity(search_term,name) if name else None
+                               })
 
         logger.debug( prices)
         return prices
