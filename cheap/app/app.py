@@ -1,6 +1,8 @@
 __author__ = 'vantani'
-from flask import Flask,abort,jsonify
+from flask import Flask, jsonify
+
 import locator
+
 
 app = Flask(__name__)
 
@@ -15,7 +17,6 @@ def search_books(title):
 @app.route('/api/1.0/mobiles/<string:title>',methods=['GET'])
 def search_mobiles(title):
     return jsonify({'results':locator.process('mobiles',title)})
-
 
 if __name__ == '__main__':
     #Only for development
