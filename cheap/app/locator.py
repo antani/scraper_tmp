@@ -1,7 +1,6 @@
 __author__ = 'vantani'
 from threading import Thread
 # Ref: http://stackoverflow.com/questions/3239617/how-to-manage-python-threads-results
-import sys
 from parsers import flipkart_parser
 from parsers import amazon_parser
 from parsers import infibeam_parser
@@ -12,24 +11,6 @@ from parsers import junglee_parser
 from parsers import landmark_parser
 from parsers import snapdeal_parser
 from parsers import uread_parser
-
-
-
-def multikeysort(items, columns):
-    from operator import itemgetter
-
-    comparers = [((itemgetter(col[1:].strip()), -1) if col.startswith('-') else (itemgetter(col.strip()), 1)) for col in
-                 columns]
-
-    def comparer(left, right):
-        for fn, mult in comparers:
-            result = cmp(fn(left), fn(right))
-            if result:
-                return mult * result
-            else:
-                return 0
-
-    return sorted(items, cmp=comparer)
 
 
 
@@ -108,7 +89,9 @@ def process(search_type, search_term):
         for r in ret[0]:
             results.append(r)
 
-    sorted_items = multikeysort(results, ['-weight','price'])
+    # Sort name weight descending and price ascending
+    # http://stygianvision.net/updates/python-sort-list-object-dictionary-multiple-key/
+    sorted_items = sorted(results, key=lambda k: (-k['weight'], k['price']))
     return sorted_items
 
 if __name__ == '__main__':

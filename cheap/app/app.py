@@ -21,4 +21,4 @@ def search_mobiles(title):
 if __name__ == '__main__':
     #Only for development
     app.debug = True
-    app.run()
+    app.run(port=5001)

@@ -2,17 +2,18 @@ __author__ = 'vantani'
 # -*- coding: utf-8 -*-
 import logging
 import logging.config
-import memcache
-import re
-from memorised.decorators import memorise, memcache_none
 from hashlib import md5
-from lxml.html import parse,tostring
-from pyquery import PyQuery as pq
-from profilehooks import timecall
+from lxml.html import tostring
 import urllib
 import requests
 from lxml import html
+
+from pyquery import PyQuery as pq
+
+import memcache
+import re
 from similarity import string_similarity
+
 
 mc = None
 BASE_URL="http://www.crossword.in/home/search?q={0}"
@@ -90,7 +91,7 @@ class CrosswordParser:
 
         prices=[]
         for price,name,author,discount,img,url in map(None, price_d,name_d,author_d,discount_d,img_d, url_d):
-            prices.append({'source':'crossword', 'price':float(price),
+            prices.append({'source':'crossword', 'price':float(sanitize_price(price)),
                            'name':name,
                            'author':author,
                            'discount':discount,'img':img,
