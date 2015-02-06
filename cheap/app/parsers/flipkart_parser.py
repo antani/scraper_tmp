@@ -1,17 +1,19 @@
 __author__ = 'vantani'
 # -*- coding: utf-8 -*-
+
 import logging
 import logging.config
-
-import memcache
-from memorised.decorators import memorise, memcache_none
 from hashlib import md5
 from lxml.html import parse,tostring
-from pyquery import PyQuery as pq
-from profilehooks import timecall
-from similarity import string_similarity
 
+from pyquery import PyQuery as pq
+from titlecase import titlecase
+
+import memcache
+import string_utils
+from similarity import string_similarity
 import re
+
 
 mc = None
 BASE_URL="http://www.flipkart.com/search?q="
@@ -88,10 +90,15 @@ class FlipkartParser:
         prices=[]
         for price, name, img, url, author, discount in map(None, price_d,name_d,img_d,url_d,author_d,discount_d ):
             if price:
-                prices.append({'source':'flipkart', 'price':float(sanitize_price(price)),'name':name,
+                if name:
+                    weight = string_similarity(string_utils.clean_words(search_term), string_utils.clean_words(name))
+                else:
+                    weight = 0.0
+
+                prices.append({'source':'flipkart', 'price':float(sanitize_price(price)),'name':titlecase(name),
                                'img':img, 'url':url,'author':author,
                                'discount':' '.join(discount.split()) if discount else None,
-                               'weight':string_similarity(search_term,name) if name else None})
+                               'weight':weight})
 
         logger.debug( prices)
         return prices

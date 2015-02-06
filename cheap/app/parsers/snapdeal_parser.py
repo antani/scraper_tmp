@@ -2,17 +2,20 @@ __author__ = 'vantani'
 # -*- coding: utf-8 -*-
 import logging
 import logging.config
-import memcache
-import re
-from memorised.decorators import memorise, memcache_none
 from hashlib import md5
-from lxml.html import parse,tostring
-from pyquery import PyQuery as pq
-from profilehooks import timecall
+from lxml.html import tostring
 import urllib
 import requests
 from lxml import html
+
+from pyquery import PyQuery as pq
+from titlecase import titlecase
+
+import memcache
+import re
 from similarity import string_similarity
+import string_utils
+
 
 mc = None
 BASE_URL="http://www.snapdeal.com/search?keyword={0}&catId=&categoryId=&suggested=false&vertical=&noOfResults=20&clickSrc=go_header&lastKeyword=algorithms&prodCatId=&changeBackToAll=false&foundInAll=false&categoryIdSearched=&cityPageUrl=&url=&utmContent=&catalogID=&dealDetail="
@@ -89,12 +92,17 @@ class SnapdealParser:
 
         prices=[]
         for price,name,author,discount,img,url in map(None, price_d,name_d,author_d,discount_d,img_d, url_d):
+            if name:
+                    weight = string_similarity(string_utils.clean_words(search_term), string_utils.clean_words(name))
+            else:
+                    weight = 0.0
+
             prices.append({'source':'snapdeal', 'price': float(sanitize_price(price)),
-                           'name':name,
+                           'name':titlecase(name),
                            'author':author,
                            'discount':discount,'img':img,
                            'url':url,
-                           'weight':string_similarity(search_term,name) if name else None
+                           'weight':weight
                            })
 
         logger.debug( prices)

@@ -12,8 +12,6 @@ from parsers import landmark_parser
 from parsers import snapdeal_parser
 from parsers import uread_parser
 
-
-
 def flipkart_books_handler(outList,search_term):
     t = flipkart_parser.FlipkartParser()
     # Modify existing object (important!)

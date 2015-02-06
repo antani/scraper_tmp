@@ -2,17 +2,20 @@ __author__ = 'vantani'
 # -*- coding: utf-8 -*-
 import logging
 import logging.config
-import memcache
-import re
-from memorised.decorators import memorise, memcache_none
 from hashlib import md5
-from lxml.html import parse,tostring
-from pyquery import PyQuery as pq
-from profilehooks import timecall
+from lxml.html import tostring
 import urllib
 import requests
 from lxml import html
+
+from pyquery import PyQuery as pq
+from titlecase import titlecase
+
+import memcache
+import re
 from similarity import string_similarity
+import string_utils
+
 
 mc = None
 BASE_URL="http://www.ebay.in/sch/i.html?_nkw={0}"
@@ -89,13 +92,17 @@ class EbayParser:
 
         prices=[]
         for price,name,author,discount,img,url in map(None, price_d,name_d,author_d,discount_d,img_d, url_d):
-            prices.append({'source':'ebay', 'price':float(sanitize_price(price)),
-                           'name':name,
-                           'author':author,
-                           'discount':discount,'img':img,
-                           'url':url,
-                           'weight':string_similarity(search_term,name) if name else None}
-                           )
+            if name:
+                weight = string_similarity(string_utils.clean_words(search_term), string_utils.clean_words(name))
+            else:
+                weight = 0.0
+
+            prices.append({'source': 'amazon', 'price': float(sanitize_price(price)),
+                           'name': titlecase(name),
+                           'author': author,
+                           'discount': discount, 'img': img,
+                           'url': url, 'weight': weight
+            })
 
         logger.debug( prices)
         return prices
