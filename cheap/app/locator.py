@@ -84,8 +84,9 @@ def process(search_type, search_term):
     for t in threads:
         t[0].join()
         ret = t[1]
-        for r in ret[0]:
-            results.append(r)
+        if ret:
+            for r in ret[0]:
+                results.append(r)
 
     # Sort name weight descending and price ascending
     # http://stygianvision.net/updates/python-sort-list-object-dictionary-multiple-key/

@@ -98,10 +98,10 @@ class UreadParser:
                     weight = string_similarity(string_utils.clean_words(search_term), string_utils.clean_words(name))
                 else:
                     weight = 0.0
-                prices.append({'source':'uread', 'price':float(sanitize_price(price)),
+                prices.append({'source':'http://localhost/static/cache/images/stores/Uread.png', 'price':float(sanitize_price(price)),
                                'name':titlecase(name),
                                'author':author,
-                               'discount':discount,'img':img,
+                               'discount':discount,'img':img if string_utils.is_url(img) else 'http://google.com',
                                'url':url,
                                'weight':weight
                                })

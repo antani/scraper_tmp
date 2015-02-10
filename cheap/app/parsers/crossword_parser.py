@@ -98,10 +98,10 @@ class CrosswordParser:
             else:
                 weight = 0.0
 
-            prices.append({'source': 'amazon', 'price': float(sanitize_price(price)),
+            prices.append({'source': 'http://localhost/static/cache/images/stores/Crossword.png', 'price': float(sanitize_price(price)),
                            'name': titlecase(name),
                            'author': author,
-                           'discount': discount, 'img': img,
+                           'discount': discount, 'img': img if string_utils.is_url(img) else 'http://google.com',
                            'url': url, 'weight': weight
             })
 
