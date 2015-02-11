@@ -16,11 +16,14 @@ def clean_words(title):
     return cleanded_title
 
 def is_url(url):
+    flag=False
     if url:
         o = urlparse(url.strip())
-        if o.scheme=='http' or o.scheme=='https':
-            return True
+        if o.scheme in ['http','https']:
+            flag=True
         else:
-            return False
+            flag=False
     else:
-        return False
+        flag=False
+    #print" Is Valid URL : ", url, flag
+    return flag

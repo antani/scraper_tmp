@@ -97,7 +97,7 @@ class SnapdealParser:
             else:
                     weight = 0.0
 
-            prices.append({'source':'http://localhost/static/cache/images/stores//Snapdeal.png', 'price': float(sanitize_price(price)),
+            prices.append({'source':'http://localhost/static/cache/images/stores/Snapdeal.png', 'price': float(sanitize_price(price)),
                            'name':titlecase(name),
                            'author':author,
                            'discount':discount,'img':img if string_utils.is_url(img) else 'http://google.com',

@@ -95,6 +95,7 @@ class FlipkartParser:
                 else:
                     weight = 0.0
 
+                print "~~~img:",img
                 prices.append({'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':titlecase(name),
                                'img':img if string_utils.is_url(img) else 'http://google.com', 'url':url,'author':author,
                                'discount':' '.join(discount.split()) if discount else None,
@@ -133,10 +134,17 @@ class FlipkartParser:
 
         prices=[]
         for price, name, img, url, usp, discount in map(None, price_d,name_d,img_d,url_d,usp_d,discount_d ):
-            prices.append({'source':'flipkart', 'price':float(sanitize_price(price)),'name':name,
-                           'img':img, 'url':url,'usp':usp,
-                           'discount':discount,
-                           'weight':string_similarity(search_term,name) if name else None})
+            if price:
+                if name:
+                    weight = string_similarity(string_utils.clean_words(search_term), string_utils.clean_words(name))
+                else:
+                    weight = 0.0
+
+                print "~~~usp:",usp
+                prices.append({'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':name,
+                               'img':img if string_utils.is_url(img) else 'http://google.com', 'url':url,'usp':usp,
+                               'discount':discount,
+                               'weight':weight})
 
         logger.debug( prices)
         return prices
