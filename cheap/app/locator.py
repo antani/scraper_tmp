@@ -74,7 +74,7 @@ def process(search_type, search_term):
     processors = []
     if search_type == 'books':
         processors=['flipkart_books','amazon','crossword','ebay','infibeam','bookadda','junglee','landmark','uread']
-    else:
+    elif search_type in ['mobiles','electronics','kitchen','tv','laptop','computers']:
         processors=['flipkart','amazon','ebay','junglee','snapdeal']
 
     threads = [doStuffWith(k,search_term) for k in processors]

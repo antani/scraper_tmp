@@ -95,8 +95,8 @@ class FlipkartParser:
                 else:
                     weight = 0.0
 
-                print "~~~img:",img
-                prices.append({'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':titlecase(name),
+
+                prices.append({'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':(name),
                                'img':img if string_utils.is_url(img) else 'http://google.com', 'url':url,'author':author,
                                'discount':' '.join(discount.split()) if discount else None,
                                'weight':weight})
@@ -140,7 +140,7 @@ class FlipkartParser:
                 else:
                     weight = 0.0
 
-                print "~~~usp:",usp
+
                 prices.append({'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':name,
                                'img':img if string_utils.is_url(img) else 'http://google.com', 'url':url,'usp':usp,
                                'discount':discount,
