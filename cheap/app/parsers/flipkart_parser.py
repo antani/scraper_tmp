@@ -8,7 +8,7 @@ from lxml.html import parse,tostring
 
 from pyquery import PyQuery as pq
 from titlecase import titlecase
-
+import uuid
 import memcache
 import string_utils
 from similarity import string_similarity
@@ -60,7 +60,7 @@ class FlipkartParser:
         return val
 
 
-    def flipkart_book_parser(self,search_term):
+    def flipkart_book_parser(self,search_term,search_type):
 
         d = pq(self.get_page(search_term,"book"))
         price_d = d('div.pu-final').map(lambda i, e: pq(e).text())
@@ -95,18 +95,20 @@ class FlipkartParser:
                 else:
                     weight = 0.0
 
-
-                prices.append({'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':(name),
-                               'img':img if string_utils.is_url(img) else 'http://google.com', 'url':url,'author':author,
-                               'discount':' '.join(discount.split()) if discount else None,
-                               'weight':weight})
+                price = {'uuid':str(uuid.uuid4()),'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':(name),
+                         'img':img if string_utils.is_url(img) else 'http://google.com', 'url':url,'author':author,
+                         'discount':' '.join(discount.split()) if discount else None,
+                         'weight':weight,'type':search_type}
+                if price:
+                    self.mc.set(price['uuid'],price,time=84000)
+                    prices.append(price)
 
         logger.debug( prices)
         return prices
 
 
 
-    def flipkart_rest_parser(self, search_term):
+    def flipkart_rest_parser(self, search_term,search_type):
         d = pq(self.get_page(search_term))
         price_d = d('div.pu-final').map(lambda i, e: pq(e).text())
         for p in price_d:
@@ -141,12 +143,16 @@ class FlipkartParser:
                     weight = 0.0
 
 
-                prices.append({'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':name,
-                               'img':img if string_utils.is_url(img) else 'http://google.com', 'url':url,'usp':usp,
-                               'discount':discount,
-                               'weight':weight})
+                price={'uuid':str(uuid.uuid4()),'source':'http://localhost/static/cache/images/stores/Flipkart.png', 'price':float(sanitize_price(price)),'name':name,
+                       'img':img if string_utils.is_url(img) else 'http://google.com', 'url':url,'usp':usp,
+                       'discount':discount,'type':search_type,
+                       'weight':weight}
 
-        logger.debug( prices)
+                if price:
+                    self.mc.set(price['uuid'],price,time=84000)
+                    prices.append(price)
+
+        logger.debug(prices)
         return prices
 
 

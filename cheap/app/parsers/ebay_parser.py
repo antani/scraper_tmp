@@ -16,6 +16,7 @@ import re
 from similarity import string_similarity
 import string_utils
 
+import uuid
 
 mc = None
 BASE_URL="http://www.ebay.in/sch/i.html?_nkw={0}"
@@ -64,7 +65,7 @@ class EbayParser:
         return val
 
 
-    def parse(self,search_term):
+    def parse(self,search_term,search_type):
         d = pq(self.get_page(search_term,"Rest"))
         price_d = d('li.lvprice.prc').map(lambda i, e: pq(e).text())
         for p in price_d:
@@ -96,13 +97,17 @@ class EbayParser:
                 weight = string_similarity(string_utils.clean_words(search_term), string_utils.clean_words(name))
             else:
                 weight = 0.0
+            uuid_tmp=str(uuid.uuid4())
+            price= {'uuid':uuid_tmp,'source': 'http://localhost/static/cache/images/stores/Ebay.png', 'price': float(sanitize_price(price)),
+                    'name': titlecase(name),
+                    'author': author,
+                    'discount': discount, 'img': img if string_utils.is_url(img) else 'http://google.com',
+                    'url': url, 'weight': weight,'type':search_type,
+                    }
 
-            prices.append({'source': 'http://localhost/static/cache/images/stores/Ebay.png', 'price': float(sanitize_price(price)),
-                           'name': titlecase(name),
-                           'author': author,
-                           'discount': discount, 'img': img if string_utils.is_url(img) else 'http://google.com',
-                           'url': url, 'weight': weight
-            })
+            if price:
+                self.mc.set(uuid_tmp,price,time=84000)
+                prices.append(price)
 
         logger.debug( prices)
         return prices

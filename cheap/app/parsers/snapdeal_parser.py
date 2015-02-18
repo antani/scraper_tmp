@@ -15,7 +15,7 @@ import memcache
 import re
 from similarity import string_similarity
 import string_utils
-
+import uuid
 
 mc = None
 BASE_URL="http://www.snapdeal.com/search?keyword={0}&catId=&categoryId=&suggested=false&vertical=&noOfResults=20&clickSrc=go_header&lastKeyword=algorithms&prodCatId=&changeBackToAll=false&foundInAll=false&categoryIdSearched=&cityPageUrl=&url=&utmContent=&catalogID=&dealDetail="
@@ -24,20 +24,21 @@ logger = logging.getLogger("root")
 
 # Helper functions to clean up price values to a number
 def sanitize_price(price_value):
-    # Remove all Rupee symbols and commas
-    cleaned_price = price_value.strip().replace(',','').replace(u'\u20b9','')
-    # Remove all characters except a .
-    non_decimal = re.compile(r'[^\d.]+')
-    price_digs = non_decimal.sub('', cleaned_price)
-    # After this there might be a leading . , remove it
-    if price_digs =='':
-        return 0
+    if price_value:
+        # Remove all Rupee symbols and commas
+        cleaned_price = price_value.strip().replace(',','').replace(u'\u20b9','')
+        # Remove all characters except a .
+        non_decimal = re.compile(r'[^\d.]+')
+        price_digs = non_decimal.sub('', cleaned_price)
+        # After this there might be a leading . , remove it
+        if price_digs =='':
+            return 0
 
-    if price_digs[0] == '.':
-        price = price_digs[1:]
-    else:
-        price = price_digs
-    return price
+        if price_digs[0] == '.':
+            price = price_digs[1:]
+        else:
+            price = price_digs
+        return price
 
 
 def getkey(str):
@@ -64,7 +65,7 @@ class SnapdealParser:
         return val
 
 
-    def parse(self,search_term):
+    def parse(self,search_term,search_type):
         d = pq(self.get_page(search_term,"book"))
         price_d = d('div.product-price div span#price').map(lambda i, e: pq(e).text())
         for p in price_d:
@@ -97,13 +98,17 @@ class SnapdealParser:
             else:
                     weight = 0.0
 
-            prices.append({'source':'http://localhost/static/cache/images/stores/Snapdeal.png', 'price': float(sanitize_price(price)),
-                           'name':titlecase(name),
-                           'author':author,
-                           'discount':discount,'img':img if string_utils.is_url(img) else 'http://google.com',
-                           'url':url,
-                           'weight':weight
-                           })
+            uuid_tmp=str(uuid.uuid4())
+            price={'uuid':uuid_tmp,'source':'http://localhost/static/cache/images/stores/Snapdeal.png', 'price': float(sanitize_price(price)),
+                   'name':titlecase(name),
+                   'author':author,
+                   'discount':discount,'img':img if string_utils.is_url(img) else 'http://google.com',
+                   'url':url,'type':search_type,
+                   'weight':weight
+                   }
+            if price:
+                self.mc.set(uuid_tmp,price,time=84000)
+                prices.append(price)
 
         logger.debug( prices)
         return prices

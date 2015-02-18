@@ -7,15 +7,13 @@ from lxml.html import tostring
 import urllib
 import requests
 from lxml import html
-
 from pyquery import PyQuery as pq
 from titlecase import titlecase
-
 import memcache
 import re
 from similarity import string_similarity
 import string_utils
-
+import uuid
 
 mc = None
 BASE_URL="http://www.landmarkonthenet.com/books/search/?q={0}"
@@ -64,7 +62,7 @@ class LandmarkParser:
         return val
 
 
-    def parse(self,search_term):
+    def parse(self,search_term,search_type):
         d = pq(self.get_page(search_term,"Rest"))
 
         price_d = d('p.prices span.pricelabel').map(lambda i, e: pq(e).text())
@@ -99,13 +97,17 @@ class LandmarkParser:
                 else:
                     weight = 0.0
 
-                prices.append({'source':'http://localhost/static/cache/images/stores/Landmark.png', 'price':float(sanitize_price(price)),
-                               'name':titlecase(name),
-                               'author':author,
-                               'discount':discount,'img':img if string_utils.is_url(img) else 'http://google.com',
-                               'url':url,
-                               'weight':weight
-                               })
+                uuid_tmp=str(uuid.uuid4())
+                price={'uuid':uuid_tmp,'source':'http://localhost/static/cache/images/stores/Landmark.png', 'price':float(sanitize_price(price)),
+                       'name':titlecase(name),
+                       'author':author,
+                       'discount':discount,'img':img if string_utils.is_url(img) else 'http://google.com',
+                       'url':url,'type':search_type,
+                       'weight':weight
+                       }
+                if price:
+                    self.mc.set(uuid_tmp,price,time=84000)
+                    prices.append(price)
 
         logger.debug( prices)
         return prices

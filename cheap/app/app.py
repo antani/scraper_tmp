@@ -5,9 +5,11 @@ import locator
 import logging
 import datetime
 from flask import request
+import uuid
+import memcache
 
 
-
+mc = memcache.Client(['localhost:11211'], debug=1)
 app = Flask(__name__)
 LOG_FILENAME = 'scrapper_access_log.log'
 info_log = logging.getLogger('app_info_log')
@@ -40,7 +42,6 @@ def index():
 
 @app.route('/api/1.0/books/<string:title>',methods=['GET'])
 def search_books(title):
-
     return jsonify({'results':locator.process('books',title)})
 
 @app.route('/api/1.0/mobiles/<string:title>',methods=['GET'])
@@ -66,6 +67,15 @@ def search_laptop(title):
 @app.route('/api/1.0/computers/<string:title>',methods=['GET'])
 def search_computers(title):
     return jsonify({'results':locator.process('computers',title)})
+
+@app.route('/api/1.0/<string:uuid>',methods=['GET'])
+def mobile_brands(uuid):
+    val=mc.get(str(uuid))
+    if val is None:
+        return jsonify([])
+    else:
+        return jsonify(val)
+
 
 if __name__ == '__main__':
     #Only for development
