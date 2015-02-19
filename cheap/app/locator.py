@@ -11,6 +11,8 @@ from parsers import junglee_parser
 from parsers import landmark_parser
 from parsers import snapdeal_parser
 from parsers import uread_parser
+import bottlenose
+
 
 def flipkart_books_handler(outList,search_term,search_type):
     t = flipkart_parser.FlipkartParser()
@@ -93,5 +95,19 @@ def process(search_type, search_term):
     sorted_items = sorted(results, key=lambda k: (-k['weight'], k['price']))
     return sorted_items
 
+def amazon_product_api_test():
+    AWS_ACCESS_KEY_ID="AKIAIFYA4LL4UVHAQDSQ"
+    AWS_SECRET_ACCESS_KEY="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"
+    AMAZON_ASSOCIATE_TAG="cheapr-21"
+
+    amazon = bottlenose.Amazon(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AMAZON_ASSOCIATE_TAG)
+    response = amazon.ItemSearch(Keywords="Algorithms", ResponseGroup="ItemAttributes",
+               SearchIndex="Books")
+    print(response)
+    # from lxml import objectify
+    # root = objectify.fromstring(response)
+    # root.Items.Item.OfferSummary.LowestNewPrice.FormattedPrice
+
 if __name__ == '__main__':
-    print process('books','algorithms')
+    #print process('books','algorithms')
+    amazon_product_api_test()
